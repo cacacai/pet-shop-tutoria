@@ -25,23 +25,25 @@ App = {
 
   initWeb3: async function() {
     //https://mirror.xyz/0xABae923874F05e922A22932d8d2117ffE627212d/4irYCy6U6BpejAHDAMY_dIdzNi0l9ScNpf6WD_loysY
-    if (window.etherem) {
+    if (window.ethereum) {
+      App.web3Provider = window.ethereum;
       try {
-        //获取钱包授权
-        await windown.etherem.enable();
-      }catch(error) {
-        console.log(error,"获取授权失败")
+        // Request account access
+        await window.ethereum.enable();
+      } catch (error) {
+        // User denied account access...
+        console.error("User denied account access")
       }
     }
-    // 传统的dapp浏览器 
-    else if (window.web3){
-      App.web3Provider = window.web3.currentProvider
-    }else {
-      //如果没有检测到注入的 web3 实例，则回退到 Ganache
-      App.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
-
+    // Legacy dapp browsers...
+    else if (window.web3) {
+      App.web3Provider = window.web3.currentProvider;
     }
-    web3 = new Web3(App.web3Provider)
+    // If no injected web3 instance is detected, fall back to Ganache
+    else {
+      App.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
+    }
+    web3 = new Web3(App.web3Provider);    
     return App.initContract();
   },
 
@@ -73,7 +75,7 @@ App = {
     App.contracts.Adoption.deployed().then((instance) =>{
       adoptionInstance = instance;
       //调用合约的getAdopters()方法，用call 读取信息不用消耗gas
-      return adoptionInstance.getAdopeters().call();
+      return adoptionInstance.getAdopeters();
     }).then((adopters) => {
       for (let i = 0; i < adopters.length; i++) {
         if([adopters[i] !== '0x0000000000000000000000000000000000000000']) {
